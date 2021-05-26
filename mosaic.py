@@ -10,14 +10,15 @@ import shutil
 from celery import Celery
 #celery -A mosaic worker --pool=solo --loglevel=INFO
  
+port = os.environ['PORT'] 
 celery_app = Celery('tasks',
-             broker='redis://localhost',
-             backend='redis://localhost'
+             broker='redis://localhost/'+port,
+             backend='redis://localhost/'+port
             )
 
 celery_app.conf.update(
-    broker_url = 'redis://localhost',
-    result_backend = 'redis://localhost',
+    broker_url = 'redis://localhost/'+port,
+    result_backend = 'redis://localhost/'+port,
     result_persistent = False,
     accept_content = ['json'],
     task_serializer = 'json',
