@@ -4,8 +4,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-# import uvicorn
-
 import os
 import shutil
 import uuid
