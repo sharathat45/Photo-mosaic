@@ -45,6 +45,7 @@
         .bd-placeholder-img-lg {
           font-size: 3.5rem;
         }
+     
       }      
     </style>
     
@@ -94,12 +95,15 @@
               <option value="True">Grayscale mosaic</option>
             </select>
           </div>  
-          <div class="col-3"> 
+          <div class="col-4"> 
             <select class="form-select form-select-sm" id="focus_option" >
               <option value="True" selected>More Focus on target image</option>
               <option value="False">More focus on background images</option>
             </select>  
           </div>
+          <div class="col-4">
+            <button class="btn btn-outline-dark btn-sm" onclick="getMosaic()">Get Mosaic</button>                
+          </div>   
         </div>  
         <br>
         <div class="row">
@@ -107,25 +111,19 @@
             <label for="FileUpload1" style = "margin-bottom: 0px; margin-left: 7px;">Upload Target Image</label> 
             <input class="btn btn btn-sm" type="file" accept=".jpg, .jpeg, .png" id="FileUpload1">
           </div>
-          <div class="col-4">
+          <div class="col-5">
             <label for="filepicker" style = "margin-bottom: 0px; margin-left: 8px;">Upload Background Images in a <u>Zipfile</u></label> 
             <input class="btn btn btn-sm" type="file" accept=".zip" id="filepicker">
-          </div>
-          <div class="col-4">
-            <button class="btn btn-outline-dark btn-sm" style = "margin-top: 25px" onclick="getMosaic()">Get Mosaic</button>                
-          </div>          
-        </div>  
-        
-              
+          </div>                 
+        </div>           
       </div>
      
       <div class="album py-5 bg-light">
         <div class="container">
-
           <div class="row">
             <div class="col-md-4">
               <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="./static/images/colour_thumb-1.JPG" alt="Thumbnail [100%x225]" style="height: 225px; width: 100%; display: block;" data-holder-rendered="true">
+                <img class="card-img-top" src="./static/images/colour_thumb-1.jpg" alt="Thumbnail [100%x225]" style="height: 225px; width: 100%; display: block;" data-holder-rendered="true">
                 <div class="card-body">
                   <p class="card-text">
                     Colour Mosaic 
@@ -142,7 +140,7 @@
             </div>
             <div class="col-md-4">
               <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="./static/images/grayscale_thumb-2.JPG" alt="Thumbnail [100%x225]"  data-holder-rendered="true" style="height: 225px; width: 100%; display: block;">
+                <img class="card-img-top" src="./static/images/grayscale_thumb-2.jpg" alt="Thumbnail [100%x225]"  data-holder-rendered="true" style="height: 225px; width: 100%; display: block;">
                 <div class="card-body">
                   <p class="card-text">
                     Grayscale Mosaic 
@@ -159,7 +157,7 @@
             </div>
             <div class="col-md-4">
               <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="./static/images/colour_thumb-3.JPG" alt="Thumbnail [100%x225]" data-holder-rendered="true" style="height: 225px; width: 100%; display: block;">
+                <img class="card-img-top" src="./static/images/colour_thumb-3.jpg" alt="Thumbnail [100%x225]" data-holder-rendered="true" style="height: 225px; width: 100%; display: block;">
                 <div class="card-body">
                   <p class="card-text">
                     Colour Mosaic 
