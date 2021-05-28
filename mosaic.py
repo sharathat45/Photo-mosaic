@@ -11,15 +11,16 @@ from celery import Celery
 #celery -A mosaic worker --pool=solo --loglevel=INFO
  
 
-db_url = "redis://localhost:6379"
+broker_url = "amqp://localhost:5372"
+backend_url = "rpc://localhost:5372"
 celery_app = Celery('tasks',
-             broker= db_url,
-             backend= db_url
+             broker= broker_url,
+             backend= backend_url
             )
 
 celery_app.conf.update(
-    broker_url = db_url,
-    result_backend = db_url,
+    broker_url = broker_url,
+    result_backend = backend_url,
     result_persistent = False,
     accept_content = ['json'],
     task_serializer = 'json',
