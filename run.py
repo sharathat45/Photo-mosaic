@@ -1,6 +1,6 @@
 import subprocess
-subprocess.run(["apt-get", "upgrade"])
-subprocess.run(["apt-get", "update"])
+# subprocess.run(["apt-get", "upgrade"])
+# subprocess.run(["apt-get", "update"])
 subprocess.run(["apt", "install", "libsm6"])
 subprocess.run(["apt", "install", "libxext6"])
 subprocess.run(["apt", "install", "ffmpeg"])
