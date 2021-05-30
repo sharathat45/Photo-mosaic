@@ -1,0 +1,20 @@
+language: python
+    python:
+      - "3.8"
+    # command to install dependencies
+    install:
+      - sudo apt install -y libsm6 libxext6 ffmpeg libfontconfig1 libxrender1 libgl1-mesa-glx
+      - pip install -r requirements.txt
+
+
+    # command to run tests
+    script:
+      - docker run -d -p 6379:6379 redis
+      - celery -A mosaic worker --pool=solo 
+      - uvicorn server:app
+      
+
+    # command to deploy to heroku
+    deploy:
+      provider: Heroku
+      api_key: $HEROKU_API_KEY
