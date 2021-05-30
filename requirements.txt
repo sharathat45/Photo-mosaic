@@ -20,3 +20,9 @@ numpy==1.19.2
 Pillow==8.2.0
 celery==5.0.5
 opencv-python
+libsm6 
+libxext6 
+ffmpeg 
+libfontconfig1 
+libxrender1 
+libgl1-mesa-glx
