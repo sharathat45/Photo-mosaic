@@ -16,7 +16,7 @@ websockets==8.1
 wrapt==1.11.2
 Jinja2==3.0.
 aiofiles==0.7.0
-numpy==1.19.2
+numpy
 Pillow==8.2.0
 celery==5.0.5
 python-multipart
