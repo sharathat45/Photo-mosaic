@@ -13,12 +13,12 @@ from celery import Celery
 
 broker_url = os.environ['REDIS_URL']
 backend_url = os.environ['REDIS_URL']
-celery_app = Celery('tasks',
+app = Celery('tasks',
              broker= broker_url,
              backend= backend_url
             )
 
-celery_app.conf.update(
+app.conf.update(
     broker_url = broker_url,
     result_backend = backend_url,
     result_persistent = False,
@@ -28,7 +28,7 @@ celery_app.conf.update(
     task_ignore_result = False
 )
 
-@celery_app.task(bind=True)
+@app.task(bind=True)
 def get_mosaic(self, temp_folder_name:str, grayscale_flag: bool, focus_option:bool):
 
 #--------------------------Set variables of program--------------------------------------------------------
