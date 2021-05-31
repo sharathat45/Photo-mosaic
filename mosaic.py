@@ -168,7 +168,7 @@ def get_mosaic(self, temp_folder_name:str, grayscale_flag: bool, focus_option:bo
 #------------------------------Return temp folder name--------------------------------------------------------
     return temp_folder_name     
    
-@celery_app.task  
+@app.task  
 def remove_file(temp_folder_name):
     try:
         shutil.rmtree(os.path.join("temp",temp_folder_name), ignore_errors = False)
