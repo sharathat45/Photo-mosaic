@@ -1,3 +1,2 @@
-# Photo-mosaic
-# fastapi and celery with rabbitmq
-# deployed on gcp
+<h1> Photo-mosaic-web-server</h1>
+
