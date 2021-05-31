@@ -11,8 +11,8 @@ from celery import Celery
 #celery -A mosaic worker --pool=solo --loglevel=INFO
  
 
-broker_url = "amqp://localhost:5372"
-backend_url = "rpc://localhost:5372"
+broker_url = CELERY_BROKER_URL
+backend_url = CELERY_BACKEND_URL
 celery_app = Celery('tasks',
              broker= broker_url,
              backend= backend_url
