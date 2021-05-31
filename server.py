@@ -33,7 +33,7 @@ async def get_target_image( target_Image: UploadFile = File(...), input_Images:U
     target_image = os.path.join(folder_path, "target_img.jpg")
     input_images = os.path.join(folder_path, "temp_zip.zip")
 
-    remove_file.apply_async([folder_name],countdown=5*60)  #5 mins
+#     remove_file.apply_async([folder_name],countdown=5*60)  #5 mins
     
     with open(target_image, "wb") as buffer:
         shutil.copyfileobj(target_Image.file, buffer)
