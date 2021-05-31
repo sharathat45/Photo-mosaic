@@ -11,8 +11,8 @@ from celery import Celery
 #celery -A mosaic worker --pool=solo --loglevel=INFO
  
 
-broker_url = os.environ['REDIS_URL']
-backend_url = os.environ['REDIS_URL']
+broker_url = os.environ.get('REDIS_DB_URL')
+backend_url = os.environ.get('REDIS_DB_URL')
 app = Celery('tasks',
              broker= broker_url,
              backend= backend_url
