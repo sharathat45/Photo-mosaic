@@ -1,5 +1,5 @@
 function getMosaic()
-{  
+{ 
     var target_Image = document.getElementById("FileUpload1").files;
     var input_Images = document.getElementById("filepicker").files;
     var image_option = document.getElementById('image_option').value;
@@ -26,23 +26,41 @@ function getMosaic()
                 allowOutsideClick: false});
     }
     else
-    {
-    uploading_popup(true);
+    {   
+        uploading_popup(true);
+        formData.append("target_Image", target_Image[0]);
+        
+        var options = {
+            method: 'POST',
+            body: formData
+        }
 
-    formData.append("target_Image", target_Image[0]);
-    formData.append("input_Images", input_Images[0]);
-    
-    var options = {
-        method: 'POST',
-        body: formData
-    }
-
-    fetch('/api/v1/upload_files/', options)
-    .then(response => response.json())
-    .then(data => start_task(data.token, image_option, focus_option))
-    .catch(error =>{ console.log(error);
-        uploading_popup(false);});
-    } 
+        fetch('/upload_files', options)
+        .then(response => response.json())
+        .then(data => upload_zip_file(data.SignedUrl, data.token))
+        .catch(error =>{ 
+            console.log('ERROR: ',error);
+            uploading_popup(false); });
+        
+        function upload_zip_file(url,token)
+        {
+            zip_file = $('#filepicker')[0].files[0];
+            
+            url = url.replace(/\"/g, "")
+            fetch(url, {
+            method: 'PUT',
+            body: zip_file
+            })
+            .then(response => response.text())
+            .catch(error => {
+                console.log('ERROR', error);
+                uploading_popup(false); })
+            .then(response => {
+                console.log('done uploading...');
+                start_task(token, image_option, focus_option)
+            });
+        } 
+    }     
 }
 
 function start_task(Token, Image_option, Focus_option)
@@ -59,7 +77,7 @@ function start_task(Token, Image_option, Focus_option)
         })
     }
 
-    fetch('/api/v1/start_task/',options)
+    fetch('/start_task',options)
     .then(response => response.json())
     .then(data => download_final_image(data.token))
     .catch(error => uploading_popup(false));
@@ -87,7 +105,7 @@ function download_final_image(token)
     var computation_flag = false;
     
     var checker = setInterval(function(){
-    fetch('/api/v1/search_final_image/'.concat(token))
+    fetch('/api/status/'.concat(token))
     .then(response => response.json())
     .then(data => {
         if(data.state == "SUCCESS") { computation_flag = true; }
@@ -99,7 +117,7 @@ function download_final_image(token)
 
     if(computation_flag == true)
     {
-        fetch('/api/v1/download_final_image/'.concat(token))
+        fetch('/api/download_final_image/'.concat(token))
         .then(response => response.blob())
         .then(function(myblob){
             download(myblob, "PhotoMosaic.jpg", "image/jpg"); 
@@ -111,7 +129,7 @@ function download_final_image(token)
         Swal.fire({
         title: "Downloading!!",
         icon:'success',
-        text: "Don't refresh, Image size is larger, It will download in a while",
+        text: "Don't refresh!!, Image size is larger, It will download in a while...Check your downloads",
         timer:5000,
         didOpen: () => {Swal.showLoading();}
         }).then(result =>{
@@ -200,7 +218,8 @@ function uploading_popup(state)
     }
 }        
 
-function swipe(image_name) {
+function swipe(image_name) 
+{
     var url = "./static/images/"+image_name
     window.open(url,'Image','width=largeImage.stylewidth,height=largeImage.style.height,resizable=1');
- }
+}

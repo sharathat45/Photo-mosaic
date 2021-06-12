@@ -5,56 +5,57 @@ import os
 import io 
 import random
 from zipfile import ZipFile
-import shutil
+import tempfile
+from google.cloud import storage
 
-from celery import Celery
-#celery -A mosaic worker --pool=solo --loglevel=INFO
- 
+def update_state(token,state, meta):
+    client = storage.Client()
+    bucket = client.get_bucket('temp_files_mosaic')
+    
+    try:
+        temp = tempfile.NamedTemporaryFile() 
+        iName = "".join([str(temp.name),".txt"])
+        text_file = open(iName, "w")
+        txt = state + " " + str(meta['current'])
+        text_file.write(txt)
+        text_file.close()
+        blob = bucket.get_blob(token + '/status.txt')
+        blob.upload_from_filename(iName,content_type='text/plain')
+        temp.close()
+    except:
+        pass
 
-broker_url = os.environ['REDIS_URL']
-backend_url = os.environ['REDIS_URL']
-app = Celery('tasks',
-             broker= broker_url,
-             backend= backend_url
-            )
-
-app.conf.update(
-    broker_url = broker_url,
-    result_backend = backend_url,
-    result_persistent = False,
-    accept_content = ['json'],
-    task_serializer = 'json',
-    task_track_started = True, 
-    task_ignore_result = False
-)
-
-@app.task(bind=True)
-def get_mosaic(self, temp_folder_name:str, grayscale_flag: bool, focus_option:bool):
+    
+def get_mosaic(temp_folder_name:str, grayscale_flag: bool, focus_option:bool):
 
 #--------------------------Set variables of program--------------------------------------------------------
     desired_height  = 20000  #15
     desired_width  = 18000  #12          
     grid_size = (36,18)
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket("temp_files_mosaic")
+    
     if focus_option:
         blend_factor = 0.8
     else:
         blend_factor = 0.7
 
-    temp_folder_path =  os.path.join("temp", temp_folder_name)
-    self.update_state(state='PROGRESS', meta={'current': 10})
+    update_state(temp_folder_name,state='PROGRESS', meta={'current': 10})
 
 #------------------------------ Read target image and calcultae the shape--------------------------------------------------------
-    target_img_path = os.path.join(temp_folder_path, "target_img.jpg")
+    target_img = 0
+    for blobs in bucket.list_blobs(prefix=temp_folder_name):
+        if (str(blobs)).find("target_img") != -1:
+            target_img = np.asarray(bytearray(blobs.download_as_string()),dtype="uint8")
+            target_img =cv2.imdecode(target_img,cv2.IMREAD_UNCHANGED)
+            break
     
     if grayscale_flag:        
-        target_img = cv2.imread(target_img_path,0)
+        target_img = cv2.cvtColor(target_img, cv2.COLOR_RGB2GRAY)
         target_h,target_w = target_img.shape[:2]
     else:
-        target_img = cv2.imread(target_img_path)
         target_h,target_w = target_img.shape[:2] 
 
-    # resize_factor = 6
-    # target_h,target_w = target_h*resize_factor,target_w*resize_factor
     if (target_h >= target_w):
         hpercent = (desired_height/float(target_h))
         target_w = int((float(target_w)*float(hpercent)))
@@ -71,14 +72,18 @@ def get_mosaic(self, temp_folder_name:str, grayscale_flag: bool, focus_option:bo
         grid_h = target_h//min(grid_size) 
 
     target_img = cv2.resize(target_img,(target_w, target_h), interpolation = cv2.INTER_CUBIC)
-    self.update_state(state='PROGRESS', meta={'current': 20})
+    update_state(temp_folder_name,state='PROGRESS', meta={'current': 20})
 
 #------------------------------ Read input images from zip file --------------------------------------------------------
-    input_imgs_path = os.path.join(temp_folder_path, "temp_zip.zip")
-    archive = ZipFile(input_imgs_path, 'r')
+    archive = 0
+    for blobs in bucket.list_blobs(prefix=temp_folder_name):
+            if str(blobs).find("temp_zip") != -1 :                
+                zipbytes = io.BytesIO(blobs.download_as_string())
+                archive = ZipFile(zipbytes, 'r')
+                break
     files = archive.namelist()
     random.shuffle(files)
-    
+
     images_list = [] 
     image_list_iter = 0
     
@@ -89,7 +94,7 @@ def get_mosaic(self, temp_folder_name:str, grayscale_flag: bool, focus_option:bo
     n_required = grid_size[0]*grid_size[1] #648 #2592
     n_store = n_required - n_inputs
     n_store = 0 if n_store < 0 else n_store
-    self.update_state(state='PROGRESS', meta={'current': 40})
+    update_state(temp_folder_name,state='PROGRESS', meta={'current': 40})
 
 #------------------------------ Resize input images , store and create final img--------------------------------------------------------
     for image in files:
@@ -122,10 +127,10 @@ def get_mosaic(self, temp_folder_name:str, grayscale_flag: bool, focus_option:bo
             if (image_list_iter < n_store ):
                 images_list.append(input_img)
                 image_list_iter += 1
-                self.update_state(state='PROGRESS', meta={'current': (40 + image_list_iter/10)})
+                # update_state(state='PROGRESS', meta={'current': (40 + image_list_iter/10)})
             
     archive.close()
-    self.update_state(state='PROGRESS', meta={'current': 70})
+    update_state(temp_folder_name,state='PROGRESS', meta={'current': 70})
 #------------------------------Using stored resized images to create final img--------------------------------------------------------
     random.shuffle(images_list)
     iter = 0
@@ -147,30 +152,40 @@ def get_mosaic(self, temp_folder_name:str, grayscale_flag: bool, focus_option:bo
       if(x >= target_w):
         x = 0
         y += grid_h
-        self.update_state(state='PROGRESS', meta={'current': 75+ iter/10})
+        # update_state(state='PROGRESS', meta={'current': 75+ iter/10})
 
       if(y >= target_h):
         loop_condition = False  
         break
     
+    update_state(temp_folder_name,state='PROGRESS', meta={'current': 85})    
 #------------------------------Save the final image--------------------------------------------------------
-    cv2.imwrite(os.path.join(temp_folder_path,"PhotoMosaic.jpg"),target_img) 
-
+    temp = tempfile.NamedTemporaryFile() 
+    iName = "".join([str(temp.name),".jpg"])
+    cv2.imwrite(iName,target_img)
+    blob = bucket.blob(temp_folder_name +'/PhotoMosaic.jpg')
+    blob.upload_from_filename(iName,content_type='image/jpeg')
+    temp.close()
 #------------------------------Delete input_imgs_zip file and target_img--------------------------------------------------------
     try:
-        os.remove(target_img_path)
-        os.remove(input_imgs_path)
+        for blobs in bucket.list_blobs(prefix=temp_folder_name):
+            blob_name = str(blobs)
+            if blob_name.find("target_img") != -1 or blob_name.find("temp_zip") != -1 :
+                blobs.delete() 
     except :
         pass
 
-    self.update_state(state='PROGRESS', meta={'current': 95})
+    update_state(temp_folder_name,state='SUCCESS', meta={'current': 95})
 
 #------------------------------Return temp folder name--------------------------------------------------------
     return temp_folder_name     
    
-@app.task  
-def remove_file(temp_folder_name):
+def remove_file(bucket_name, temp_folder_name):
     try:
-        shutil.rmtree(os.path.join("temp",temp_folder_name), ignore_errors = False)
+        storage_client = storage.Client()
+        bucket = storage_client.get_bucket(bucket_name)
+        blobs = bucket.list_blobs(prefix=temp_folder_name)
+        for blob in blobs:
+            blob.delete()
     except :
         pass
