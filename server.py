@@ -102,7 +102,7 @@ async def start_mosaic_task(background_tasks: BackgroundTasks, item: Item):
         task = {
                 'app_engine_http_request': {  
                     'http_method': tasks_v2.HttpMethod.POST,
-                    'relative_uri': '/example_task_handler'
+                    'relative_uri': '/mosaic_task_handler'
                 }
         }
         task["app_engine_http_request"]["headers"] = {"Content-type": "application/json"}
@@ -112,7 +112,7 @@ async def start_mosaic_task(background_tasks: BackgroundTasks, item: Item):
 
     return {"token": item.token}
 
-@app.post("/example_task_handler")
+@app.post("/mosaic_task_handler")
 async def gcs_push_task(item: Item):
     get_mosaic(item.token, item.image_option, item.focus_option)
     return {"token": item.token}
