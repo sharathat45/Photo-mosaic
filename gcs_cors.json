@@ -1,8 +1,0 @@
-[
-  {
-    "origin": ["https://photo-mosaic-315612.el.r.appspot.com","https://8000-322e98b9-5f78-4660-a0b8-bf9af1f17bb2.cs-asia-southeast1-zqck.cloudshell.dev/"],
-    "responseHeader": ["Content-Type"],
-    "method": ["GET", "HEAD", "DELETE", "PUT", "POST"],
-    "maxAgeSeconds": 3600
-  }
-]
