@@ -52,13 +52,12 @@ function getMosaic()
             body: zip_file
             })
             .then(response => response.text())
+            .then(data => {
+                console.log('done uploading...');
+                start_task(token, image_option, focus_option); })
             .catch(error => {
                 console.log('ERROR', error);
-                uploading_popup(false); })
-            .then(response => {
-                console.log('done uploading...');
-                start_task(token, image_option, focus_option)
-            });
+                uploading_popup(false); });
         } 
     }     
 }
@@ -117,14 +116,9 @@ function download_final_image(token)
 
     if(computation_flag == true)
     {
-        fetch('/api/download_final_image/'.concat(token))
-        .then(response => response.blob())
-        .then(function(myblob){
-            download(myblob, "PhotoMosaic.jpg", "image/jpg"); 
-        }).catch(error => retry(error));
+        location.href='https://storage.googleapis.com/temp_files_mosaic/'+ token + '/PhotoMosaic.zip'  
         
         stopChecker();
-        
         Swal.close();
         Swal.fire({
         title: "Downloading!!",
@@ -133,6 +127,7 @@ function download_final_image(token)
         timer:5000,
         didOpen: () => {Swal.showLoading();}
         }).then(result =>{
+            document.getElementById("get_mosaic").style.visibility = "hidden";
             document.getElementById("FileUpload1").value = "";
             document.getElementById("filepicker").value = "";
         });     
@@ -217,9 +212,3 @@ function uploading_popup(state)
         
     }
 }        
-
-function swipe(image_name) 
-{
-    var url = "./static/images/"+image_name
-    window.open(url,'Image','width=largeImage.stylewidth,height=largeImage.style.height,resizable=1');
-}
