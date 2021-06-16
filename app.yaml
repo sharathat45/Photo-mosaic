@@ -1,18 +1,20 @@
 runtime: python37
 default_expiration: "4m"
-instance_class: F4_HIGHMEM
 env_variables:
-  GOOGLE_APPLICATION_CREDENTIALS: '/service_account.json'
+  GOOGLE_APPLICATION_CREDENTIALS: 'service_account.json'
   IMAGE_HIGHT: '20000'  #15000
   IMAGE_WIDTH: '18000'  #12000
   BUCKET_NAME: 'photo-mosaic-315612-urlsigner'
+  PROJECT_NAME: 'photo-mosaic-315612'
+  TOPIC_NAME: 'mosaic_worker'
+  QUEUE_NAME: 'mosaicqueue'
+
 handlers:
 - url: /js
   static_dir: static/js
   http_headers:
     vary: Accept-Encoding
     
-
 - url: /images
   static_dir: static/images
   http_headers:
