@@ -116,7 +116,7 @@ function download_final_image(token)
 
     if(computation_flag == true)
     {
-        location.href='https://storage.googleapis.com/temp_files_mosaic/'+ token + '/PhotoMosaic.zip'  
+        location.href='https://storage.googleapis.com/photo-mosaic-00-urlsigner/'+ token + '/PhotoMosaic.zip'  
         
         stopChecker();
         Swal.close();
