@@ -1,18 +1,15 @@
 from fastapi import FastAPI, UploadFile, Request, File, BackgroundTasks
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from google.cloud import storage
 from google.cloud import tasks_v2
 from google.protobuf.timestamp_pb2 import Timestamp
-from mosaic_2 import get_mosaic
+from google.cloud import pubsub_v1
 import json
 import datetime
 import os
-import shutil
 import uuid
-import io
 import tempfile
 
 app = FastAPI()
@@ -32,12 +29,12 @@ def home(request: Request):
 async def get_target_image(target_Image:UploadFile = File(...)):
     folder_name =  str(uuid.uuid4())
     client = storage.Client()
-    bucket = client.get_bucket(os.getenv('BUCKET_NAME',"temp_files_mosaic"))
+    bucket = client.get_bucket(os.getenv('BUCKET_NAME'))
         
     blob = bucket.blob(folder_name + '/target_img.jpg')
     blob.upload_from_file(target_Image.file)
     
-    remove_folder_task(folder_name,countdown=8*60)  #8 mins
+    # remove_folder_task(folder_name,countdown=8*60)  #8 mins
  
     blob = bucket.blob(folder_name + '/temp_zip.zip')
     signed_url = blob.generate_signed_url(expiration= datetime.timedelta(minutes=5), method="PUT", version="v4") 
@@ -51,62 +48,71 @@ async def get_target_image(target_Image:UploadFile = File(...)):
     blob.upload_from_filename(iName,content_type='text/plain')
     temp.close()
 
-    return {"SignedUrl": signed_url, "token": folder_name} 
+    return {"SignedUrl": signed_url, "token": folder_name}     
     
 @app.get('/api/status/{token}')
 async def status(token):
     status = "STARTED"
     progress = 0
+    
+    client = storage.Client()
+    bucket = client.get_bucket(os.getenv('BUCKET_NAME'))    
     try:
-        client = storage.Client()
-        bucket = client.get_bucket(os.getenv('BUCKET_NAME',"temp_files_mosaic"))
         blob = bucket.get_blob(token + '/status.txt')
         txt = str(blob.download_as_string(),'utf-8')
         status = txt.split(" ")[0]
         progress = int(txt.split(" ")[1])
     except:
-        pass    
+        pass
+    
+    if status=='SUCCESS':
+        blob = bucket.blob(token + '/PhotoMosaic.zip')
+        blob.make_public()
+    
     return {"state": status, "progress":progress }
 
 @app.post("/start_task")
 async def start_mosaic_task(background_tasks: BackgroundTasks, item: Item):  
-    BCKGND_TASK = True
-    if BCKGND_TASK == True:
-        background_tasks.add_task(get_mosaic, item.token, item.image_option, item.focus_option)
-    else: 
-        client = tasks_v2.CloudTasksClient()    
-        project = 'photo-mosaic-315612'
-        queue = 'MosaicQueue'
-        location = 'asia-south1'
-        payload = { 'token':  item.token,
-                    'image_option': item.image_option,
-                    'focus_option': item.focus_option      }
-        payload = json.dumps(payload)
-        converted_payload = payload.encode()
+    background_tasks.add_task(publish, item.token, item.image_option, item.focus_option)
+    return {'token': item.token}
 
-        parent = client.queue_path(project, location, queue)
-        task = {
-                'app_engine_http_request': {  
-                    'http_method': tasks_v2.HttpMethod.POST,
-                    'relative_uri': '/mosaic_task_handler'
-                }
-        }
-        task["app_engine_http_request"]["headers"] = {"Content-type": "application/json"}
-        task['app_engine_http_request']['body'] = converted_payload
-        response = client.create_task(parent=parent, task=task)
-        print(response)
+def publish(temp_folder_name:str, grayscale_flag: bool, focus_option:bool):
+    topic_name = os.getenv('TOPIC_NAME')
+    PROJECT_ID = os.getenv('PROJECT_NAME')
+    message = { "temp_folder_name": temp_folder_name,
+                "grayscale_flag":grayscale_flag, 
+                "focus_option":focus_option }
 
-    return {"token": item.token}
+    publisher = pubsub_v1.PublisherClient()
+    topic_path = publisher.topic_path(PROJECT_ID, topic_name)
+    message_json = json.dumps(message)
+    message_bytes = message_json.encode('utf-8')
+    
+    try:
+        publish_future = publisher.publish(topic_path, data=message_bytes)
+        publish_future.result()  # Verify the publish succeeded
+        return 'Message published.'
+    except Exception as e:
+        print(e)
 
-@app.post("/mosaic_task_handler")
-async def mosaic_task_handler(item: Item):
-    get_mosaic(item.token, item.image_option, item.focus_option)
-    return {"token": item.token}
+        client = storage.Client()
+        bucket = client.get_bucket(os.getenv('BUCKET_NAME'))
+        temp = tempfile.NamedTemporaryFile() 
+        iName = "".join([str(temp.name),".txt"])
+        text_file = open(iName, "w")
+        txt = "ERROR 0"
+        text_file.write(txt)
+        text_file.close()
+        blob = bucket.get_blob(temp_folder_name + '/status.txt')
+        blob.upload_from_filename(iName,content_type='text/plain')
+        temp.close()
 
+        return (e, 500)
+    
 def remove_folder_task(folder_name,countdown):
-    client = tasks_v2.CloudTasksClient()     
-    project = 'photo-mosaic-315612'
-    queue = 'MosaicQueue'
+    client = tasks_v2.CloudTasksClient()   
+    project = os.getenv('PROJECT_NAME')
+    queue = os.getenv('QUEUE_NAME') 
     location = 'asia-south1'
     parent = client.queue_path(project, location, queue)
     task = {
@@ -124,7 +130,7 @@ def remove_folder_task(folder_name,countdown):
   
 @app.get("/remove_folder_task_handler/{token}")
 async def remove_folder_task_handler(token:str):
-    bucket_name = os.getenv('BUCKET_NAME',"temp_files_mosaic")
+    bucket_name = os.getenv('BUCKET_NAME')
     try:
         storage_client = storage.Client()
         bucket = storage_client.get_bucket(bucket_name)
