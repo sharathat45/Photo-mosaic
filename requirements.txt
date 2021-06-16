@@ -29,3 +29,4 @@ google-cloud-storage
 google-resumable-media
 googleapis-common-protos
 google-cloud-tasks
+google-cloud-pubsub
