@@ -1,16 +1,42 @@
+from PIL import Image
+from zipfile import ZipFile,ZIP_DEFLATED
+from google.cloud import storage
 import numpy as np
 import cv2
-from PIL import Image
 import os
 import io 
 import random
-from zipfile import ZipFile,ZIP_DEFLATED
 import tempfile
-from google.cloud import storage
+import base64
+import json
+
+def get_mosaic(event, context):
+    # print("""This Function was triggered by messageId {} published at {} to {} """.format(context.event_id, context.timestamp, context.resource["name"]))
+    
+    temp_folder_name = 0
+    try:
+        if 'data' in event:
+            data = base64.b64decode(event['data'])
+            data = json.loads(data.decode())
+            temp_folder_name = data['temp_folder_name']
+            grayscale_flag = data['grayscale_flag']
+            focus_option = data['focus_option'] 
+            
+            mosaic_task(temp_folder_name, grayscale_flag, focus_option)
+        else:
+            update_state(temp_folder_name,"ERROR",meta = {'current': 0})
+            print("Failed input data format....................")    
+    except Exception as e:
+        update_state(temp_folder_name,"ERROR",meta = {'current': 0})
+        print(e)   
+        print("ERROR:Internal error....................")   
+        
+    return temp_folder_name
+
 
 def update_state(token,state, meta):
     client = storage.Client()
-    bucket = client.get_bucket(os.getenv('BUCKET_NAME',"temp_files_mosaic"))
+    bucket = client.get_bucket(os.getenv('BUCKET_NAME'))
     print(state,meta['current'])
     try:
         temp = tempfile.NamedTemporaryFile() 
@@ -26,23 +52,13 @@ def update_state(token,state, meta):
         pass
 
 
-def get_mosaic(temp_folder_name:str, grayscale_flag: bool, focus_option:bool):
-    try:
-        mosaic_task(temp_folder_name,grayscale_flag,focus_option)
-    except Exception as e:
-        print(e)
-        update_state(temp_folder_name,"ERROR",meta = {'current': 0})
-    return temp_folder_name    
-
-
-
 def mosaic_task(temp_folder_name:str, grayscale_flag: bool, focus_option:bool):
 #--------------------------Set variables of program--------------------------------------------------------
     desired_height  = int(os.getenv('IMAGE_HIGHT', 20000))
     desired_width  = int(os.getenv('IMAGE_WIDTH', 18000))        
     grid_size = (36,18)
     storage_client = storage.Client()
-    bucket = storage_client.get_bucket(os.getenv('BUCKET_NAME',"temp_files_mosaic"))
+    bucket = storage_client.get_bucket(os.getenv('BUCKET_NAME'))
     
     if focus_option:
         blend_factor = 0.8
