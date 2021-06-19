@@ -116,7 +116,7 @@ function download_final_image(token)
 
     if(computation_flag == true)
     {
-        location.href='https://storage.googleapis.com/photo-mosaic-00-urlsigner/'+ token + '/PhotoMosaic.zip'  
+        location.href='https://storage.googleapis.com/photo-mosaic-317019-urlsigner/'+ token + '/PhotoMosaic.zip'  
         
         stopChecker();
         Swal.close();
@@ -212,3 +212,9 @@ function uploading_popup(state)
         
     }
 }        
+
+
+function view(image_name) {
+    var url = "https://storage.googleapis.com/photo-mosaic-317019-urlsigner/static_images/" + image_name; 
+    window.open(url,'Image','width=largeImage.stylewidth,height=largeImage.style.height,resizable=1');
+ }

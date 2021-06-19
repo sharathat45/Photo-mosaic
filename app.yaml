@@ -1,13 +1,14 @@
 runtime: python37
-default_expiration: "4m"
 env_variables:
   GOOGLE_APPLICATION_CREDENTIALS: 'service_account.json'
-  IMAGE_HIGHT: '20000'  #15000
-  IMAGE_WIDTH: '18000'  #12000
-  BUCKET_NAME: 'photo-mosaic-315612-urlsigner'
-  PROJECT_NAME: 'photo-mosaic-315612'
-  TOPIC_NAME: 'mosaic_worker'
+  IMAGE_HIGHT: 20000  #15000
+  IMAGE_WIDTH: 18000  #12000
+  BUCKET_NAME: 'photo-mosaic-317019-urlsigner'
+  PROJECT_NAME: 'photo-mosaic-317019'
+  TOPIC_NAME: 'mosaic_topic'
   QUEUE_NAME: 'mosaicqueue'
+  QUEUE_LOCATION: 'asia-northeast1'
+  CACHE_CLEAR_TIMEOUT: 8 #8 mins
 
 handlers:
 - url: /js

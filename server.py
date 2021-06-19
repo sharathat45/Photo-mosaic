@@ -22,19 +22,19 @@ class Item(BaseModel):
     focus_option: bool   
 
 @app.get('/')
-def home(request: Request):   
+def home(request: Request):  
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/upload_files")
 async def get_target_image(target_Image:UploadFile = File(...)):
     folder_name =  str(uuid.uuid4())
     client = storage.Client()
-    bucket = client.get_bucket(os.getenv('BUCKET_NAME'))
+    bucket = client.get_bucket('photo-mosaic-317019-urlsigner')
         
     blob = bucket.blob(folder_name + '/target_img.jpg')
     blob.upload_from_file(target_Image.file)
     
-    # remove_folder_task(folder_name,countdown=8*60)  #8 mins
+    remove_folder_task(folder_name, countdown = int(os.getenv('CACHE_CLEAR_TIMEOUT'))*60)  
  
     blob = bucket.blob(folder_name + '/temp_zip.zip')
     signed_url = blob.generate_signed_url(expiration= datetime.timedelta(minutes=5), method="PUT", version="v4") 
@@ -110,10 +110,11 @@ def publish(temp_folder_name:str, grayscale_flag: bool, focus_option:bool):
         return (e, 500)
     
 def remove_folder_task(folder_name,countdown):
-    client = tasks_v2.CloudTasksClient()   
+    # client = tasks_v2.CloudTasksClient()   
+    client = tasks_v2.CloudTasksClient.from_service_account_json('service_account.json')
     project = os.getenv('PROJECT_NAME')
     queue = os.getenv('QUEUE_NAME') 
-    location = 'asia-south1'
+    location = os.getenv('QUEUE_LOCATION') 
     parent = client.queue_path(project, location, queue)
     task = {
             'app_engine_http_request': {  
