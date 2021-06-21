@@ -1,4 +1,4 @@
-# Photo-mosaic-web
+# Photo mosaic web
 Install dependencies:
 ```
 pip install -r requirements.txt
