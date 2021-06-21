@@ -21,4 +21,4 @@ Start Celery worker by running:
 ```
 celery -A mosaic worker --pool=solo --loglevel=INFO
 ```
- 
+checkout gcp deployed app @ https://github.com/sharathat45/Photo-mosaic/tree/Photo_mosaic_gcp_app_engine
