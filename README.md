@@ -1,5 +1,5 @@
 # Photo mosaic web
-[Photo Mosaic](https://photo-mosaic-317019.an.r.appspot.com/)
+[Photo Mosaic Website](https://photo-mosaic-317019.an.r.appspot.com/)
 
 Install dependencies:
 ```
