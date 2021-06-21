@@ -6,13 +6,14 @@ import io
 import random
 from zipfile import ZipFile
 import shutil
-
 from celery import Celery
-#celery -A mosaic worker --pool=solo --loglevel=INFO
- 
+from dotenv import load_dotenv
+load_dotenv()
+broker_url = os.getenv('BROKER_URL') 
+backend_url = os.getenv('BACKEND_URL') 
+IMAGE_HIGHT = os.getenv('IMAGE_HIGHT')
+IMAGE_WIDTH = os.getenv('IMAGE_WIDTH')
 
-broker_url = "amqp://localhost:5372"
-backend_url = "rpc://localhost:5372"
 celery_app = Celery('tasks',
              broker= broker_url,
              backend= backend_url
@@ -32,9 +33,10 @@ celery_app.conf.update(
 def get_mosaic(self, temp_folder_name:str, grayscale_flag: bool, focus_option:bool):
 
 #--------------------------Set variables of program--------------------------------------------------------
-    desired_height  = 20000  #15
-    desired_width  = 18000  #12          
+    desired_height = IMAGE_HIGHT  #15
+    desired_width  = IMAGE_WIDTH  #12          
     grid_size = (36,18)
+    
     if focus_option:
         blend_factor = 0.8
     else:

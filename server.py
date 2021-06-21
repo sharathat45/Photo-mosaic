@@ -8,8 +8,9 @@ import os
 import shutil
 import uuid
 
-from mosaic import *
+from mosaic import get_mosaic
 from celery.result import AsyncResult
+
 
 app = FastAPI()
 
@@ -25,9 +26,10 @@ class Item(BaseModel):
 def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.post("/api/v1/upload_files/")
+@app.post("/api/upload_files/")
 async def get_target_image( target_Image: UploadFile = File(...), input_Images:UploadFile = File(...)):
     folder_name =  str(uuid.uuid4())
+
     folder_path = os.path.join("temp", folder_name)
     os.mkdir(folder_path)
     target_image = os.path.join(folder_path, "target_img.jpg")
@@ -43,13 +45,13 @@ async def get_target_image( target_Image: UploadFile = File(...), input_Images:U
    
     return {"token": folder_name}
 
-@app.post("/api/v1/start_task/")
+@app.post("/api/start_task/")
 async def get_target_image( item: Item):
     print(item.token, item.image_option, item.focus_option)
     r =  get_mosaic.delay(item.token, item.image_option, item.focus_option)
     return {"token": r.id}
 
-@app.get('/api/v1/search_final_image/{token}')
+@app.get('/api/status/{token}')
 async def search_final_image(token):
     process = AsyncResult(token)
     
@@ -61,7 +63,7 @@ async def search_final_image(token):
     return {"state": process.status, "progress":progress }
     
 
-@app.get('/api/v1/download_final_image/{token}')
+@app.get('/api/download_final_image/{token}')
 async def download_final_image(token):
     process = AsyncResult(token)
     folder = process.result

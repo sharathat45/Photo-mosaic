@@ -19,5 +19,8 @@ aiofiles==0.7.0
 numpy==1.19.2
 Pillow==8.2.0
 celery==5.0.5
+redis==3.5.3
 opencv-python
+
+
 

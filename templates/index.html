@@ -4,7 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">    
+    <link rel="icon" type="image/png" href="./static/images/favicon.ico">
     <title>Photo Mosaic</title>
+
 
     <link href="./static/css/bootstrap.min.css" rel="stylesheet">
     <link href="./static/css/sweetalert2.min.css" rel="stylesheet">
@@ -47,9 +49,8 @@
         }
       
       input[type='file'] {
-          color: rgba(0, 0, 0, 0)
-        }  
-        
+        color: rgba(0, 0, 0, 0)
+      }     
       }      
     </style>
     
@@ -106,7 +107,8 @@
             </select>  
           </div>
           <div class="col-4">
-            <button class="btn btn-outline-dark btn-sm" onclick="getMosaic()">Get Mosaic</button>                
+            <button class="btn btn-outline-dark btn-sm" id="get_mosaic" onclick="getMosaic()">Get Mosaic</button> 
+            <!-- <button class="btn btn-primary btn-sm" id="download" style="visibility:hidden" onclick= "abc()" >Download</button>  -->
           </div>   
         </div>  
         <br>
@@ -119,7 +121,7 @@
             <label for="filepicker" style = "margin-bottom: 0px; margin-left: 8px;">Upload Background Images in a <u>Zipfile</u></label> 
             <input class="btn btn btn-sm" type="file" accept=".zip" id="filepicker">
           </div>                 
-        </div>           
+        </div>  
       </div>
      
       <div class="album py-5 bg-light">

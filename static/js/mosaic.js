@@ -1,6 +1,5 @@
 function getMosaic()
-{  
-    var target_Image = document.getElementById("FileUpload1").files;
+{  var target_Image = document.getElementById("FileUpload1").files;
     var input_Images = document.getElementById("filepicker").files;
     var image_option = document.getElementById('image_option').value;
     var focus_option = document.getElementById('focus_option').value;
@@ -37,7 +36,7 @@ function getMosaic()
         body: formData
     }
 
-    fetch('/api/v1/upload_files/', options)
+    fetch('/api/upload_files/', options)
     .then(response => response.json())
     .then(data => start_task(data.token, image_option, focus_option))
     .catch(error =>{ console.log(error);
@@ -59,7 +58,7 @@ function start_task(Token, Image_option, Focus_option)
         })
     }
 
-    fetch('/api/v1/start_task/',options)
+    fetch('/api/start_task/',options)
     .then(response => response.json())
     .then(data => download_final_image(data.token))
     .catch(error => uploading_popup(false));
@@ -87,7 +86,7 @@ function download_final_image(token)
     var computation_flag = false;
     
     var checker = setInterval(function(){
-    fetch('/api/v1/search_final_image/'.concat(token))
+    fetch('/api/status/'.concat(token))
     .then(response => response.json())
     .then(data => {
         if(data.state == "SUCCESS") { computation_flag = true; }
@@ -99,7 +98,7 @@ function download_final_image(token)
 
     if(computation_flag == true)
     {
-        fetch('/api/v1/download_final_image/'.concat(token))
+        fetch('/api/download_final_image/'.concat(token))
         .then(response => response.blob())
         .then(function(myblob){
             download(myblob, "PhotoMosaic.jpg", "image/jpg"); 
