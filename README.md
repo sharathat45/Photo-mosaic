@@ -25,4 +25,4 @@ celery -A mosaic worker --pool=solo --loglevel=INFO
 ```
 checkout gcp app in [other branch](https://github.com/sharathat45/Photo-mosaic/tree/Photo_mosaic_gcp_app_engine) 
 <br>
-Deployed website [Photo Mosaic](https://photo-mosaic-317019.an.r.appspot.com/)
+Deployed website @ [Photo Mosaic](https://photo-mosaic-317019.an.r.appspot.com/)
