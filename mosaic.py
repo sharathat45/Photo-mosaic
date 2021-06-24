@@ -11,8 +11,8 @@ from dotenv import load_dotenv
 load_dotenv()
 broker_url = os.getenv('BROKER_URL') 
 backend_url = os.getenv('BACKEND_URL') 
-IMAGE_HIGHT = os.getenv('IMAGE_HIGHT')
-IMAGE_WIDTH = os.getenv('IMAGE_WIDTH')
+IMAGE_HIGHT = int(os.getenv('IMAGE_HIGHT'))
+IMAGE_WIDTH = int(os.getenv('IMAGE_WIDTH'))
 
 celery_app = Celery('tasks',
              broker= broker_url,
