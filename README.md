@@ -1,4 +1,7 @@
 # Photo mosaic web
+
+![image](https://user-images.githubusercontent.com/46818446/143681621-758939ad-a3d8-46ec-b9bd-3e53d255abbe.png)
+
 [Photo Mosaic Website](https://photo-mosaic-317019.an.r.appspot.com/)
 
 [Download executable application](https://photo-mosaic-317019.an.r.appspot.com/)
