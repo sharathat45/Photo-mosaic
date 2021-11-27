@@ -1,5 +1,6 @@
 # Photo mosaic web
 [Photo Mosaic Website](https://photo-mosaic-317019.an.r.appspot.com/)
+[Download executable application](https://photo-mosaic-317019.an.r.appspot.com/)
 
 Install dependencies:
 ```
